@@ -1,39 +1,36 @@
-from websocket_server import WebsocketServer
+import asyncio
+import websockets
 import json
-import time
 
-def new_client(client, server):
-    print(f"客戶端已連線：{client['address']}")
-    server.send_message(client, json.dumps({"Status": "Connected"}))
+async def handle_client(websocket, path):
+    print(f"有客戶端連線進來: {websocket.remote_address}")
 
-def message_received(client, server, message):
-    print(f"收到訊息：{message}")
     try:
-        data = json.loads(message)
+        async for message in websocket:
+            try:
+                data = json.loads(message)
 
-        if "Test" in data.get("Action", ""):
-            time.sleep(3)
-            response = {"Status": "Success"}
-        elif "Unicorn" in data.get("Action", ""):
-            time.sleep(3)
-            response = {"Status": "Error"}
-        else:
-            response = {"Status": "Unknown Action"}
-
-        server.send_message(client, json.dumps(response))
-
+                if "Test" in data.get("Action", ""):
+                    await asyncio.sleep(3)
+                    response = {"Status": "Success"}
+                    await websocket.send(json.dumps(response))
+                elif "Unicorn" in data.get("Action", ""):
+                    await asyncio.sleep(3)
+                    response = {"Status": "Error"}
+                    await websocket.send(json.dumps(response))
+            except json.JSONDecodeError:
+                print("收到非 JSON 格式資料")
+            except Exception as e:
+                print(f"資料處理錯誤: {e}")
+    except websockets.exceptions.ConnectionClosed:
+        print("📴 客戶端已斷線")
     except Exception as e:
-        print(f"JSON 處理錯誤：{e}")
-        server.send_message(client, json.dumps({"Status": "Invalid JSON"}))
+        print(f"WebSocket 錯誤: {e}")
 
-def client_left(client, server):
-    print(f"📴 客戶端已離線：{client['address']}")
+async def start_server():
+    print("啟動 WebSocket 伺服器，等待連線中...")
+    async with websockets.serve(handle_client, "0.0.0.0", 12345):
+        await asyncio.Future()
 
-PORT = 12345
-server = WebsocketServer(host='0.0.0.0', port=PORT)
-server.set_fn_new_client(new_client)
-server.set_fn_message_received(message_received)
-server.set_fn_client_left(client_left)
-
-print("WebSocket 伺服器已啟動，等待連線中...")
-server.run_forever()
+if __name__ == "__main__":
+    asyncio.run(start_server())
