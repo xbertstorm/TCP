@@ -29,7 +29,7 @@ async def handle_client(websocket, path):
 
 async def start_server():
     print("啟動 WebSocket 伺服器，等待連線中...")
-    async with websockets.serve(handle_client, "0.0.0.0", 12345):
+    async with websockets.serve(handle_client, "0.0.0.0", 80):
         await asyncio.Future()
 
 if __name__ == "__main__":
