@@ -2,3 +2,4 @@ distlib==0.3.9
 filelock==3.17.0
 platformdirs==4.3.6
 virtualenv==20.29.3
+websocket-server==0.6.4
