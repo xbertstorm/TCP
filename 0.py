@@ -8,7 +8,7 @@ async def echo(websocket):
         await websocket.send(message)
 
 async def main():
-    async with serve(echo, "0.0.0.0", os.getenv("PORT")) as server:
+    async with serve(echo, "0.0.0.0", 80) as server:
         await server.serve_forever()
 
 asyncio.run(main())
